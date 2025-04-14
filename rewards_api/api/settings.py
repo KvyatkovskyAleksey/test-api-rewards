@@ -141,3 +141,6 @@ CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
 
 # USERS MODEL
 AUTH_USER_MODEL = "users.CustomUser"
+
+# CELERY + REDIS setup
+CELERY_BROKER_URL = "redis://redis:6379/0"

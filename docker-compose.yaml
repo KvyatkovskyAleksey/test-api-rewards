@@ -16,6 +16,36 @@ services:
       - db
       - redis
 
+  worker:
+    image: local/rewards_api:api
+    command: [ "celery", "-A", 'api', "worker", '-l', 'info', '-E', "-Q", "celery" ]
+    restart: always
+    volumes:
+      - ./rewards_api:/app
+    depends_on:
+      - db
+      - redis
+
+  populate:
+    image: local/rewards_api:api
+    command: [ "python3", "manage.py", "populate", "--create-superuser" ]
+    restart: on-failure
+    volumes:
+      - ./rewards_api:/app
+    depends_on:
+      - db
+      - redis
+
+  migrations:
+    image: local/rewards_api:api
+    command: ["python3", "manage.py", "migrate", "--no-input" ]
+    restart: on-failure
+    volumes:
+      - ./rewards_api:/app
+    depends_on:
+      - db
+      - redis
+
   db:
     image: postgres:17.4-alpine
     environment:
@@ -29,3 +59,5 @@ services:
     image: redis
     ports:
       - "6379:6379"
+
+
