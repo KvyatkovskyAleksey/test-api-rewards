@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 class RewardLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = RewardLog
-        fields = ["id", "amount", "rewarded_at"]
+        fields = ["id", "amount", "given_at"]
 
 
 class RewardRequestSerializer(serializers.Serializer):

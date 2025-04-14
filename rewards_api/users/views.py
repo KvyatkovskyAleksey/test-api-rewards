@@ -24,7 +24,7 @@ class RewardLogListView(generics.ListAPIView):
 
     def get_queryset(self):
         # Возвращаем только награды авторизованного пользователя
-        return RewardLog.objects.filter(user=self.request.user).order_by("-rewarded_at")
+        return RewardLog.objects.filter(user=self.request.user).order_by("-given_at")
 
 
 class RewardRequestView(generics.GenericAPIView):

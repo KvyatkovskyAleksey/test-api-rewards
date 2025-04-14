@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "users",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -151,3 +152,16 @@ CELERY_BROKER_URL = "redis://redis:6379/0"
 
 # размер награды которую может запросить пользователь
 USER_REQUEST_REWARD_AMOUNT = 100
+
+# swagger
+SWAGGER_SETTINGS = {
+    "DEFAULT_INFO": "yourproject.urls.schema_view",
+    "SECURITY_DEFINITIONS": {
+        "JWT Token": {
+            "type": "apiKey",
+            "description": "Введите ваш JWT access токен в формате Bearer {your token}",
+            "name": "Authorization",
+            "in": "header",
+        }
+    },
+}
