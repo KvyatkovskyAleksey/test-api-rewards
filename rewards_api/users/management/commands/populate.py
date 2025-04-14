@@ -55,9 +55,6 @@ class Command(BaseCommand):
                 f"with username {username} and password {password} now."
             )
 
-        if options.get("run_cfb_api_spiders"):
-            logger.info("need to set command")
-
         self.success("Data population succeed.")
 
     def _is_admin_user_exists(self, username):
