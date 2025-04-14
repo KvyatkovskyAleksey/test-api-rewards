@@ -12,6 +12,9 @@ services:
       - ./rewards_api:/app
     ports:
       - "8000:8000"
+    depends_on:
+      - db
+      - redis
 
   db:
     image: postgres:17.4-alpine
