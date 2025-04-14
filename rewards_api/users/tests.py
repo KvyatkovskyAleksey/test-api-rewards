@@ -1,8 +1,12 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
+
+from users.models import ScheduledReward, RewardLog, CustomUser, UserRewardRequest
+from users.tasks import execute_reward
 
 
 class CustomUserTests(TestCase):
@@ -71,4 +75,58 @@ class UserProfileAPITests(APITestCase):
         )
         self.assertEqual(
             response.data, {"detail": "Authentication credentials were not provided."}
+        )
+
+
+class ScheduledRewardTaskTest(TestCase):
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(  # noqa
+            username="tasktestuser",
+            email="tasktestuser@example.com",
+            password="testpassword123",
+            coins=100,
+        )
+
+        self.reward = ScheduledReward.objects.create(
+            user=self.user, amount=50, execute_at=timezone.now()
+        )
+
+    def test_execute_reward_task(self):
+        # вызываем задачу вручную (синхронно)
+        execute_reward(self.reward.id)
+
+        # проверим, что пользователь получил монеты
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.coins, 150)
+
+        # убедимся, что была создана запись RewardLog
+        reward_log = RewardLog.objects.filter(user=self.user, amount=50).first()
+        self.assertIsNotNone(reward_log)
+
+
+class RewardRequestViewTest(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="rewarduser", email="user@test.com", password="testpass123"
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)  # noqa
+
+    def test_user_can_request_reward(self):
+        response = self.client.post("/api/rewards/request/")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Проверка наличия записи после вызова
+        request_exists = UserRewardRequest.objects.filter(
+            user=self.user, date=timezone.now().date()
+        ).exists()
+        self.assertTrue(request_exists)
+
+    def test_user_cannot_request_twice_in_one_day(self):
+        UserRewardRequest.objects.create(user=self.user, date=timezone.now().today())
+        response = self.client.post("/api/rewards/request/")
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+        self.assertEqual(
+            response.data["detail"], "You have already requested a reward today."
         )

@@ -144,3 +144,6 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 # CELERY + REDIS setup
 CELERY_BROKER_URL = "redis://redis:6379/0"
+
+# размер награды которую может запросить пользователь
+USER_REQUEST_REWARD_AMOUNT = 100
